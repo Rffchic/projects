@@ -48,3 +48,9 @@ Em seguida, para gerar o executável final:
 gcc -m32 saida.o -o meu_jogo -nostdlib -no-pie -e main
 
 Agora é só rodar: ./meu_jogo no Linux, ou meu_jogo.exe no Windows.
+
+python3 compilador_minescript.py
+nasm -f elf32 saida.asm -o saida.o
+gcc -m32 saida.o -o meu_jogo -nostdlib -no-pie
+./meu_jogo
+echo $?

@@ -1,18 +1,53 @@
-# exercício do Beecrowd na sintaxe MineScript
-mine chamadas = 0;
+if __name__ == "__main__":
+    codigo_fonte = """
+    # Resolvendo a logica core do Beecrowd 1029: Fibonacci Recursivo
+    
+    fornalha fibonacci(mine n) [
+        # 1. Pega o parametro que foi jogado na pilha (loot)
+        mine valor = loot;
+        
+        # 2. Casos base de parada da recursao
+        dinnerbone (valor == 0) [
+            retorna 0;
+        ]
+        
+        dinnerbone (valor == 1) [
+            retorna 1;
+        ]
+        
+        # 3. Calcula fib(n-1)
+        mine arg1 = valor - 1;
+        bau_guardar(valor);           # Salva o 'n' atual no bau (Stack Push)
+        mine res1 = fibonacci(arg1);  # Mergulha na recursao
+        bau_pegar(valor);             # Recupera o 'n' atual do bau (Stack Pop)
+        
+        # 4. Calcula fib(n-2)
+        mine arg2 = valor - 2;
+        bau_guardar(res1);            # Salva o resultado do res1 no bau
+        mine res2 = fibonacci(arg2);  # Mergulha de novo
+        bau_pegar(res1);              # Recupera o res1
+        
+        # 5. Retorna a soma dos dois ramos
+        mine soma = res1 + res2;
+        retorna soma;
+    ]
 
-fornalha fibonacci(mine n) [
-    chamadas = chamadas + 1;
+    # Vamos calcular o 6º numero da sequencia (0, 1, 1, 2, 3, 5, 8...)
+    mine resultado_final = fibonacci(6);
     
-    dinnerbone (n == 0) [
-        retorna 0;
-    ]
-    dinnerbone (n == 1) [
-        retorna 1;
-    ]
+    mostra("Beecrowd 1029 - Arvore de recursao executada com sucesso!");
+    """
     
-    mine a = fibonacci(n - 1);
-    mine b = fibonacci(n - 2);
+    print("Iniciando mineração dos tokens...")
+    tokens = analisar_lexico(codigo_fonte)
     
-    retorna a + b;
-]
+    print("Craftando executável x86...")
+    codigo_asm = compilar_para_assembly(tokens)
+    
+    # Truque do Python para alterar o Exit Code sem mexer no Parser inteiro
+    codigo_asm = codigo_asm.replace("mov ebx, [quantidade]", "mov ebx, [resultado_final]")
+    
+    with open("saida.asm", "w") as f:
+        f.write(codigo_asm)
+        
+    print("Sucesso! Compile e digite 'echo $?' para ver o resultado do Fibonacci.")
