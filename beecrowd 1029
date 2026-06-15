@@ -1,0 +1,18 @@
+# exercício do Beecrowd na sintaxe MineScript
+mine chamadas = 0;
+
+fornalha fibonacci(mine n) [
+    chamadas = chamadas + 1;
+    
+    dinnerbone (n == 0) [
+        retorna 0;
+    ]
+    dinnerbone (n == 1) [
+        retorna 1;
+    ]
+    
+    mine a = fibonacci(n - 1);
+    mine b = fibonacci(n - 2);
+    
+    retorna a + b;
+]
