@@ -1,0 +1,50 @@
+Para rodar esse projeto e testar a geração do seu binário em Assembly, siga estes passos no Visual Studio Code:
+
+Configuração Inicial:
+
+Certifique-se de ter o Python instalado na sua máquina para rodar o compilador.
+
+Instale o NASM (The Netwide Assembler) e o GCC (GNU Compiler Collection). Se estiver usando Windows, o caminho mais fácil é instalar o MinGW para o GCC. No Linux, basta rodar sudo apt install nasm gcc gcc-multilib.
+
+Instalar a Extensão Oficial no VS Code
+O VS Code precisa de um "plugin" para enxergar o Linux que está dentro do seu Windows.
+
+Abra o VS Code.
+
+Clique no ícone de Extensões na barra lateral esquerda (ou aperte Ctrl + Shift + X).
+
+Digite WSL na barra de pesquisa.
+
+Encontre a extensão chamada WSL (publicada pela Microsoft) e clique em Instalar.
+
+Passo 2: Verificar se o Windows tem o WSL instalado
+Se a extensão já estiver instalada e mesmo assim não aparecer, significa que o Windows ainda não ativou o subsistema.
+
+Abra o menu Iniciar do seu Windows, digite PowerShell, clique com o botão direito e selecione Executar como Administrador.
+
+No terminal azul que abrir, digite o seguinte comando e aperte Enter:
+
+PowerShell
+wsl --install
+Atenção: Se ele começar a baixar o Ubuntu, deixe terminar. Se ele disser que "o subsistema já está instalado", digite wsl -l -v para ver se há alguma distribuição rodando.
+
+Importante: Após a instalação pelo PowerShell, reinicie o seu computador para que o Windows aplique as mudanças.
+
+Executando o seu Compilador:
+
+Abra o terminal do VS Code (Ctrl + ') na pasta onde você salvou o script em Python.
+
+Rode o comando:
+python compilador_minescript.py
+
+Se tudo der certo, você verá a mensagem de sucesso e um novo arquivo chamado saida.asm aparecerá na sua barra lateral.
+
+Transformando Assembly em Executável:
+
+Com o arquivo saida.asm gerado, no terminal, digite:
+nasm -f elf32 saida.asm -o saida.o (Isso cria o arquivo objeto).
+
+Em seguida, para gerar o executável final:
+gcc -m32 saida.o -o meu_jogo -nostdlib -no-pie -e main
+
+Agora é só rodar: ./meu_jogo no Linux, ou meu_jogo.exe no Windows.
