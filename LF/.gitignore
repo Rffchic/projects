@@ -1,0 +1,6 @@
+# Ignorar binários e arquivos objeto do Assembly
+*.o
+meu_jogo
+meu_jogo.exe
+saida.asm
+__pycache__/
