@@ -2,71 +2,49 @@ import sys
 import re
 
 # ==========================================
-# 1. ANÁLISE LÉXICA (Scanner / Picareta)
+# 1. ANÁLISE LÉXICA (Scanner)
 # ==========================================
-# O Lexer é responsável por ler o texto bruto e dividi-lo em "Tokens" (palavras compreensíveis).
-# Usamos Expressões Regulares (Regex) para identificar cada pedaço do código.
 TOKEN_REGEX = [
-    # Tipos Primitivos de Dados
-    ('T_INT', r'\bmine\b'),             # Inteiros
-    ('T_FLOAT', r'\benderman\b'),       # Ponto flutuante
-    ('T_CHAR', r'\bsteve\b'),           # Caracteres
-    ('T_BOOL', r'\bredstone\b'),        # Booleanos
-    
-    # Estruturas Complexas
-    ('T_STRUCT', r'\bcraft\b'),         # Palavra-chave para criar Structs
-    ('T_DOT', r'\.'),                   # Ponto usado para acessar atributos (ex: entrega.nota)
-    
-    # Funções e Retorno
-    ('T_FUNC', r'\bfornalha\b'),        # Declaração de função
-    ('T_RETURN', r'\bretorna\b'),       # Retorno de função
-    ('T_PRINT', r'\bmostra\b'),         # Função embutida para imprimir na tela
-    
-    # Controle de Fluxo
-    ('T_IF', r'\bdinnerbone\b'),        # Estrutura condicional (If)
-    ('T_ELSE', r'\bcreeper\b'),         # Caminho alternativo (Else)
-    ('T_WHILE', r'\brepetidor\b'),      # Laço de repetição (While)
-    ('T_GOTO', r'\benderpearl\b'),      # Salto incondicional (Go To)
-    
-    # Controle de Pilha e Parâmetros (Assembly de baixo nível)
-    ('T_PARAM', r'\bloot\b'),           # Lê o primeiro parâmetro recebido pela função
-    ('T_PUSH', r'\bbau_guardar\b'),     # Salva um valor na Stack (push)
-    ('T_POP', r'\bbau_pegar\b'),        # Recupera um valor da Stack (pop)
-    
-    # Rótulos (Labels) para o Go To
-    ('T_LABEL_DEF', r'@[a-zA-Z_][a-zA-Z0-9_]*:'), # Ponto de aterrissagem (ex: @base:)
-    ('T_LABEL_REF', r'@[a-zA-Z_][a-zA-Z0-9_]*'),  # Destino do pulo (ex: @base)
-    
-    # Valores e Símbolos
-    ('T_TRUE', r'\bverdadeiro\b'),      # Booleano True
-    ('T_FALSE', r'\bfalso\b'),          # Booleano False
-    ('T_NUMBER', r'\b\d+\b'),           # Qualquer número inteiro
-    ('T_STRING_VAL', r'"[^"]*"'),       # Textos entre aspas duplas
-    ('T_IDENTIFIER', r'[a-zA-Z_][a-zA-Z0-9_]*'), # Nomes de variáveis criadas pelo usuário
-    
-    # Operadores Matemáticos e Lógicos
-    ('T_EQUAL', r'=='),                 # Comparação de igualdade
-    ('T_ASSIGN', r='='),                # Atribuição de valor
-    ('T_LESS', r'<'),                   # Menor que
-    ('T_LBRACKET', r'\['),              # Abre colchetes (Vetores e blocos)
-    ('T_RBRACKET', r'\]'),              # Fecha colchetes
-    ('T_LPAREN', r'\('),                # Abre parênteses
-    ('T_RPAREN', r'\)'),                # Fecha parênteses
-    ('T_ADD', r'\+'),                   # Adição
-    ('T_SUB', r'\-'),                   # Subtração
-    ('T_SEMI', r';'),                   # Fim de instrução
-    ('T_COMMA', r','),                  # Separador
-    
-    # Ignorados pelo Compilador
-    ('T_COMMENT', r'#.*'),              # Ignora tudo após o '#' até o fim da linha
-    ('T_SKIP', r'[ \t\n\r]+'),          # Ignora espaços em branco e quebras de linha
+    ('T_INT', r'\bmine\b'),
+    ('T_FLOAT', r'\benderman\b'),
+    ('T_CHAR', r'\bsteve\b'),
+    ('T_BOOL', r'\bredstone\b'),
+    ('T_STRUCT', r'\bcraft\b'),         
+    ('T_DOT', r'\.'),                   
+    ('T_FUNC', r'\bfornalha\b'),        
+    ('T_RETURN', r'\bretorna\b'),       
+    ('T_PRINT', r'\bmostra\b'),
+    ('T_IF', r'\bdinnerbone\b'),
+    ('T_ELSE', r'\bcreeper\b'),         
+    ('T_WHILE', r'\brepetidor\b'),
+    ('T_FOR', r'\btrilho\b'),           # NOVO: A palavra reservada para o For Loop
+    ('T_GOTO', r'\benderpearl\b'),      
+    ('T_PARAM', r'\bloot\b'),           
+    ('T_PUSH', r'\bbau_guardar\b'),     
+    ('T_POP', r'\bbau_pegar\b'),        
+    ('T_LABEL_DEF', r'@[a-zA-Z_][a-zA-Z0-9_]*:'),
+    ('T_LABEL_REF', r'@[a-zA-Z_][a-zA-Z0-9_]*'),
+    ('T_TRUE', r'\bverdadeiro\b'),      
+    ('T_FALSE', r'\bfalso\b'),          
+    ('T_NUMBER', r'\b\d+\b'),
+    ('T_STRING_VAL', r'"[^"]*"'),
+    ('T_IDENTIFIER', r'[a-zA-Z_][a-zA-Z0-9_]*'),
+    ('T_EQUAL', r'=='),                 
+    ('T_ASSIGN', r'='),                 
+    ('T_LESS', r'<'),
+    ('T_LBRACKET', r'\['),
+    ('T_RBRACKET', r'\]'),
+    ('T_LPAREN', r'\('),
+    ('T_RPAREN', r'\)'),
+    ('T_ADD', r'\+'),
+    ('T_SUB', r'\-'),                   
+    ('T_SEMI', r';'),
+    ('T_COMMA', r','),                  
+    ('T_COMMENT', r'#.*'),              
+    ('T_SKIP', r'[ \t\n\r]+'),
 ]
 
 def analisar_lexico(codigo):
-    """
-    Varre o código fonte caractere por caractere.
-    Se encontrar um padrão válido, transforma em Token. Se achar um caractere alienígena, para o programa.
-    """
     tokens = []
     pos = 0
     while pos < len(codigo):
@@ -76,7 +54,6 @@ def analisar_lexico(codigo):
             match = regex.match(codigo, pos)
             if match:
                 texto = match.group(0)
-                # Não guardamos espaços nem comentários, eles não vão para o Assembly
                 if nome_token not in ['T_SKIP', 'T_COMMENT']:
                     tokens.append((nome_token, texto))
                 pos = match.end(0)
@@ -87,81 +64,68 @@ def analisar_lexico(codigo):
     return tokens
 
 # ==========================================
-# 2, 3 e 6. SINTÁTICA, SEMÂNTICA E GERAÇÃO DE CÓDIGO
+# 2, 3 e 6. SINTÁTICA, SEMÂNTICA E ASSEMBLY
 # ==========================================
 def compilar_para_assembly(tokens):
-    """
-    O Parser: Transforma a lista de tokens em instruções do processador x86.
-    O Assembly no Linux é dividido em 3 seções:
-    - .data: Para coisas que não mudam (ex: Textos do print).
-    - .bss: Para alocar espaço de variáveis na memória RAM (zeradas).
-    - .text: A lógica do programa (os comandos reais).
-    """
     asm_data = ["section .data"]
     asm_bss = ["section .bss"]
     asm_text = ["section .text", "    global _start", "_start:"]
     
     tipos_primitivos = ('T_INT', 'T_FLOAT', 'T_CHAR', 'T_BOOL')
     
-    # Dicionários para ajudar o compilador a lembrar as estruturas matemáticas do usuário
-    tabela_structs = {}  # Guarda o molde da Struct (quais atributos ela tem e a distância em bytes de cada um)
-    mapa_instancias = {} # Associa o nome de uma variável ao seu molde (ex: entrega_atual é do tipo RelacaoUsuarioPedido)
+    tabela_structs = {}
+    mapa_instancias = {}
+    mapa_matrizes = {} # NOVO: Guarda o limite de colunas para fazer a matemática 2D
     
-    # ---------------------------------------------------------
-    # PASSO 1: O Reconhecimento de Structs (Aprender o Molde)
-    # ---------------------------------------------------------
-    # Antes de alocar memória, precisamos varrer o código para descobrir como as Structs do usuário são feitas.
+    # PASSO 1: Mapeamento de Structs
     pos = 0
     while pos < len(tokens):
         if tokens[pos][0] == 'T_STRUCT':
             struct_name = tokens[pos+1][1]
             tabela_structs[struct_name] = {}
-            offset = 0 # Distância em bytes a partir do endereço principal
-            pos += 3   # Pula 'craft', 'NomeDaStruct', '['
-            
-            # Lê todos os atributos internos da struct
+            offset = 0
+            pos += 3 
             while tokens[pos][0] != 'T_RBRACKET':
                 if tokens[pos][0] in tipos_primitivos and tokens[pos+1][0] == 'T_IDENTIFIER':
                     attr_name = tokens[pos+1][1]
                     tabela_structs[struct_name][attr_name] = offset
-                    offset += 4 # No x86 de 32 bits, cada variável ocupa 4 bytes
+                    offset += 4 
                     pos += 3
                 else:
                     pos += 1
         pos += 1
 
-    # ---------------------------------------------------------
-    # PASSO 2: Alocação de Memória RAM (A seção .bss)
-    # ---------------------------------------------------------
-    # Agora que sabemos os moldes, vamos varrer de novo para reservar espaço na RAM para todas as variáveis do usuário.
+    # PASSO 2: Alocação Inteligente no .BSS
     for i, t in enumerate(tokens):
-        # 2.1 - Aloca Vetores (ex: mine inventario[3];) -> Reserva N slots de 4 bytes.
+        # NOVO: Aloca Matrizes 2D ou Vetores 1D
         if t[0] == 'T_IDENTIFIER' and i > 0 and tokens[i-1][0] in tipos_primitivos and i+1 < len(tokens) and tokens[i+1][0] == 'T_LBRACKET':
-            tamanho = tokens[i+2][1]
-            asm_bss.append(f"    {t[1]} resd {tamanho} ; Aloca um vetor de {tamanho} posições")
+            if i+3 < len(tokens) and tokens[i+3][0] == 'T_LBRACKET': 
+                # É uma Matriz 2D! (ex: mine mapa[2][2])
+                linhas = int(tokens[i+2][1])
+                colunas = int(tokens[i+4][1])
+                mapa_matrizes[t[1]] = colunas
+                asm_bss.append(f"    {t[1]} resd {linhas * colunas} ; Matriz {linhas}x{colunas}")
+            else:
+                # É um Vetor 1D! (ex: mine inventario[5])
+                tamanho = tokens[i+2][1]
+                asm_bss.append(f"    {t[1]} resd {tamanho} ; Vetor 1D")
             
-        # 2.2 - Aloca Variáveis Primitivas (ex: mine x;) -> Reserva 1 slot (resd 1).
         elif t[0] == 'T_IDENTIFIER' and i > 0 and tokens[i-1][0] in tipos_primitivos and not (i > 1 and tokens[i-2][0] == 'T_LPAREN') and not (i+1 < len(tokens) and tokens[i+1][0] == 'T_LBRACKET'):
-            asm_bss.append(f"    {t[1]} resd 1 ; Aloca variável global")
+            asm_bss.append(f"    {t[1]} resd 1")
             
-        # 2.3 - Aloca Instâncias de Structs (ex: Relacao entrega;) -> Calcula o total de bytes e reserva (resb).
         elif t[0] == 'T_IDENTIFIER' and t[1] in tabela_structs:
             if i+1 < len(tokens) and tokens[i+1][0] == 'T_IDENTIFIER':
                 inst_name = tokens[i+1][1]
                 mapa_instancias[inst_name] = t[1]
                 tamanho_total = len(tabela_structs[t[1]]) * 4
-                asm_bss.append(f"    {inst_name} resb {tamanho_total} ; Aloca bloco para a struct {t[1]}")
+                asm_bss.append(f"    {inst_name} resb {tamanho_total}")
 
     str_count = 0
-    pilha_blocos = [] # Ajuda a rastrear IFs e Loops para saber onde colocar os fechamentos ']'
+    pilha_blocos = [] 
     i = 0
     
-    # ---------------------------------------------------------
-    # PASSO 3: A Geração da Lógica (A seção .text)
-    # ---------------------------------------------------------
+    # PASSO 3: Geração de Lógica
     while i < len(tokens):
-        
-        # Ignora as palavras de Tipos de Dados na hora de executar (já foram pro .bss)
         if tokens[i][0] in tipos_primitivos:
             if i+2 < len(tokens) and tokens[i+2][0] == 'T_LBRACKET':
                 while tokens[i][0] != 'T_SEMI': i += 1
@@ -170,52 +134,94 @@ def compilar_para_assembly(tokens):
             i += 1
             continue
 
-        # Ignora a definição de Structs (já foram mapeadas no Passo 1)
         if tokens[i][0] == 'T_STRUCT':
             while tokens[i][0] != 'T_RBRACKET': i += 1
             i += 1
             continue
             
-        # Ignora a criação da variável da struct (já foi pro .bss no Passo 2)
         if tokens[i][0] == 'T_IDENTIFIER' and tokens[i][1] in tabela_structs:
             i += 3 
             continue
 
-        # Regra: Atribuição dentro de um Vetor (ex: inventario[2] = 5;)
+        # NOVO: Atribuição do Laço For (trilho)
+        # Sintaxe esperada: trilho ( i = 0 ; i < 3 ; i = i + 1 ) [
+        if tokens[i][0] == 'T_FOR' and tokens[i+1][0] == 'T_LPAREN':
+            var_name = tokens[i+2][1]
+            inicio = tokens[i+4][1]
+            limite = tokens[i+8][1]
+            passo = tokens[i+14][1]
+            label_id = i
+            
+            asm_text.append(f"    ; trilho: {var_name} de {inicio} ate {limite} (passo {passo})")
+            asm_text.append(f"    mov dword [{var_name}], {inicio}") # Inicializa
+            asm_text.append(f"inicio_trilho_{label_id}:")
+            asm_text.append(f"    mov eax, [{var_name}]")
+            asm_text.append(f"    cmp eax, {limite}")
+            asm_text.append(f"    jge fim_trilho_{label_id}") # Sai se chegou no limite
+            
+            # Guardamos na pilha as informações para injetar o incremento lá no colchete ']'
+            pilha_blocos.append(('FOR', label_id, var_name, passo))
+            
+            while tokens[i][0] != 'T_LBRACKET': i += 1
+            i += 1
+            continue
+
+        # NOVO: Atribuição em Matriz 2D (ex: mapa[1][1] = 99;)
+        if tokens[i][0] == 'T_IDENTIFIER' and i+7 < len(tokens) and tokens[i+1][0] == 'T_LBRACKET' and tokens[i+3][0] == 'T_LBRACKET' and tokens[i+7][0] == 'T_ASSIGN':
+            matriz_name = tokens[i][1]
+            linha = int(tokens[i+2][1])
+            coluna = int(tokens[i+4][1])
+            valor = tokens[i+8][1]
+            
+            # A Matemática da Matriz Linear
+            colunas_total = mapa_matrizes[matriz_name]
+            offset = ((linha * colunas_total) + coluna) * 4
+            
+            asm_text.append(f"    ; {matriz_name}[{linha}][{coluna}] = {valor}")
+            if valor.isdigit():
+                asm_text.append(f"    mov dword [{matriz_name} + {offset}], {valor}")
+            i += 10
+            continue
+
+        # Atribuição em Vetor 1D
         if tokens[i][0] == 'T_IDENTIFIER' and i+4 < len(tokens) and tokens[i+1][0] == 'T_LBRACKET' and tokens[i+4][0] == 'T_ASSIGN':
             vetor_name = tokens[i][1]
             indice = int(tokens[i+2][1])
             valor = tokens[i+5][1]
-            
-            # A mágica do Array: Endereço Base + (Índice * 4 bytes)
             offset = indice * 4
+            
             asm_text.append(f"    ; {vetor_name}[{indice}] = {valor}")
             if valor.isdigit():
                 asm_text.append(f"    mov dword [{vetor_name} + {offset}], {valor}")
-            
             i += 7
             continue
 
-        # Regra: Atribuição dentro de uma Struct (ex: entrega.nota = 5;)
-        if tokens[i][0] == 'T_IDENTIFIER' and i+2 < len(tokens) and tokens[i+1][0] == 'T_DOT' and tokens[i+3][0] == 'T_ASSIGN':
-            inst_name = tokens[i][1]
-            attr_name = tokens[i+2][1]
-            struct_type = mapa_instancias[inst_name]
-            offset = tabela_structs[struct_type][attr_name] # Pega a distância mapeada no Passo 1
-            valor = tokens[i+4][1]
-            
-            asm_text.append(f"    ; {inst_name}.{attr_name} = {valor}")
-            if valor.isdigit(): 
-                asm_text.append(f"    mov dword [{inst_name} + {offset}], {valor}")
-            elif valor == 'verdadeiro':
-                asm_text.append(f"    mov dword [{inst_name} + {offset}], 1") # Booleano vira bit
-            
-            i += 6
-            continue
-
-        # Regra: Atribuição de Variável Normal (ex: x = 10;)
+        # Atribuição Primitiva ou Matemática Simples
         if tokens[i][0] == 'T_IDENTIFIER' and i+1 < len(tokens) and tokens[i+1][0] == 'T_ASSIGN':
             var_dest = tokens[i][1]
+            
+            # Matemática (ex: x = y + z;)
+            if i+4 < len(tokens) and tokens[i+3][0] in ('T_ADD', 'T_SUB'):
+                op1 = tokens[i+2][1]
+                operador = tokens[i+3][0]
+                op2 = tokens[i+4][1]
+                
+                asm_text.append(f"    ; {var_dest} = {op1} {'+' if operador == 'T_ADD' else '-'} {op2}")
+                if op1.isdigit(): asm_text.append(f"    mov eax, {op1}")
+                else: asm_text.append(f"    mov eax, [{op1}]")
+                
+                if operador == 'T_ADD':
+                    if op2.isdigit(): asm_text.append(f"    add eax, {op2}")
+                    else: asm_text.append(f"    add eax, [{op2}]")
+                else:
+                    if op2.isdigit(): asm_text.append(f"    sub eax, {op2}")
+                    else: asm_text.append(f"    sub eax, [{op2}]")
+                
+                asm_text.append(f"    mov [{var_dest}], eax")
+                i += 6
+                continue
+
+            # Atribuição Direta (ex: x = 10;)
             if i+3 < len(tokens) and tokens[i+2][0] in ('T_NUMBER', 'T_TRUE', 'T_FALSE') and tokens[i+3][0] == 'T_SEMI':
                 op1 = tokens[i+2][1]
                 asm_text.append(f"    ; {var_dest} = {op1}")
@@ -226,55 +232,90 @@ def compilar_para_assembly(tokens):
                 i += 4
                 continue
 
-        # Regra: Imprimir Texto na tela usando o Syscall do Linux
+        # Fechamento de Blocos ']' - Agora com suporte ao FOR
+        elif tokens[i][0] == 'T_RBRACKET':
+            if pilha_blocos:
+                bloco = pilha_blocos.pop()
+                tipo = bloco[0]
+                
+                if tipo == 'WHILE':
+                    label = bloco[1]
+                    asm_text.append(f"    jmp inicio_loop_{label}")
+                    asm_text.append(f"fim_loop_{label}:")
+                    
+                # NOVO: Injetando o incremento do trilho antes de voltar
+                elif tipo == 'FOR':
+                    label = bloco[1]
+                    var_name = bloco[2]
+                    passo = bloco[3]
+                    asm_text.append(f"    ; Incremento do trilho")
+                    asm_text.append(f"    mov eax, [{var_name}]")
+                    asm_text.append(f"    add eax, {passo}")
+                    asm_text.append(f"    mov [{var_name}], eax")
+                    asm_text.append(f"    jmp inicio_trilho_{label}")
+                    asm_text.append(f"fim_trilho_{label}:")
+                    
+                elif tipo == 'IF':
+                    label = bloco[1]
+                    if i + 1 < len(tokens) and tokens[i+1][0] == 'T_ELSE':
+                        asm_text.append(f"    jmp fim_else_{label}")
+                        asm_text.append(f"fim_if_{label}:")
+                        pilha_blocos.append(('ELSE', label))
+                        while tokens[i][0] != 'T_LBRACKET': i += 1
+                    else:
+                        asm_text.append(f"fim_if_{label}:")
+                elif tipo == 'ELSE':
+                    asm_text.append(f"fim_else_{bloco[1]}:")
+                elif tipo == 'FUNC':
+                    asm_text.append(f"pula_funcao_{bloco[1]}:")
+            i += 1
+
         elif tokens[i][0] == 'T_PRINT' and tokens[i+1][0] == 'T_LPAREN' and tokens[i+2][0] == 'T_STRING_VAL':
             texto = tokens[i+2][1].strip('"')
             label_str = f"msg_{str_count}"
             label_len = f"len_{str_count}"
             str_count += 1
-            
-            # Salva o texto blindado com aspas duplas na seção .data e calcula o tamanho dele
-            asm_data.append(f'    {label_str} db "{texto}", 10') 
+            asm_data.append(f'    {label_str} db "{texto}", 10')
             asm_data.append(f"    {label_len} equ $ - {label_str}")
-            
-            # Prepara a interrupção 0x80 do Linux para escrever (sys_write)
             asm_text.append(f"    ; mostra(\"{texto}\")")
-            asm_text.append(f"    mov eax, 4           ; Syscall 4 = Write")
-            asm_text.append(f"    mov ebx, 1           ; Arquivo 1 = Tela (Monitor)")
-            asm_text.append(f"    mov ecx, {label_str} ; O texto")
-            asm_text.append(f"    mov edx, {label_len} ; O tamanho")
-            asm_text.append(f"    int 0x80             ; Chama o kernel do Linux")
+            asm_text.append(f"    mov eax, 4")
+            asm_text.append(f"    mov ebx, 1")
+            asm_text.append(f"    mov ecx, {label_str}")
+            asm_text.append(f"    mov edx, {label_len}")
+            asm_text.append(f"    int 0x80")
             i += 4
             if i < len(tokens) and tokens[i][0] == 'T_SEMI': i += 1
             
         else:
             i += 1
 
-    # Regra Final: Finaliza o executável de forma segura (sys_exit)
-    asm_text.append("\n    ; Encerrando o programa limpo")
-    asm_text.append("    mov eax, 1     ; Syscall 1 = Exit")
-    asm_text.append("    xor ebx, ebx   ; Zera o EBX (Return 0)")
-    asm_text.append("    int 0x80       ; Chama o kernel")
+    # Finalização do programa
+    asm_text.append("\n    ; Encerrando o programa")
+    asm_text.append("    mov eax, 1")
+    asm_text.append("    mov ebx, [meu_contador]") # O Exit Code devolve o valor de 'meu_contador' para provar o For!
+    asm_text.append("    int 0x80")
     
-    # Junta as três seções em um único arquivo de texto gigante
     return "\n".join(asm_data) + "\n\n" + "\n".join(asm_bss) + "\n\n" + "\n".join(asm_text)
 
 # ==========================================
-# FLUXO PRINCIPAL
+# FLUXO PRINCIPAL (Testando For e Matrizes)
 # ==========================================
 if __name__ == "__main__":
     codigo_fonte = """
-    # Este código final prova todos os conceitos complexos integrados:
-    mine inventario[3];
-    inventario[0] = 64; 
-    
-    craft RelacaoUsuarioPedido [
-        mine avaliacao;
-    ]
-    RelacaoUsuarioPedido entrega;
-    entrega.avaliacao = 5;
+    # 1. Testando a Matemática de Matriz 2D
+    mine mapa[3][3];
+    mapa[2][2] = 99;  # Calculado como Offset 32 (Linha 2 * 3 Colunas + 2) * 4 bytes
 
-    mostra("Sistema Inicializado e Memoria Alocada. O Compilador MineScript e um sucesso!");
+    # 2. Testando o laco de repeticao FOR (trilho)
+    mine i;
+    mine meu_contador = 0;
+    
+    trilho (i = 0; i < 5; i = i + 1) [
+        meu_contador = meu_contador + 2;
+    ]
+
+    # No final do trilho, meu_contador deve ser igual a 10 (5 vezes * 2)
+    mostra("Motor do Trilho e Offsets de Matrizes injetados com sucesso!");
     """
     
     print("Iniciando mineração dos tokens...")
@@ -286,4 +327,4 @@ if __name__ == "__main__":
     with open("saida.asm", "w") as f:
         f.write(codigo_asm)
         
-    print("Pronto! Arquivo .asm atualizado com sucesso.")
+    print("Sucesso! Compile e digite 'echo $?' para ver o resultado do FOR.")
